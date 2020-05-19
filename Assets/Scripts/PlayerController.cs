@@ -2,12 +2,16 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour {
 
 	public float speed = 500;
 	public Rigidbody rb;
 	private int health = 5;
+	public Text scoreText;
+	public Text healthText;
+	public Text winLose;
 	
 	private int score;
 
@@ -15,7 +19,11 @@ public class PlayerController : MonoBehaviour {
 		if (health == 0)
 		{
 			Debug.Log("Game Over!");
-			SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+			winLose.text = "Game Over!";
+			winLose.color = Color.white;
+			winLose.transform.parent.GetComponent<Image>().color = Color.red;
+			winLose.transform.parent.gameObject.SetActive(true);
+			StartCoroutine(LoadScene(3));
 		}
 	}
 	
@@ -29,6 +37,8 @@ public class PlayerController : MonoBehaviour {
 			rb.AddForce(-(speed * Time.deltaTime), 0 , 0);
 		if (Input.GetKey("d"))
 			rb.AddForce(speed * Time.deltaTime, 0 ,0);
+		if (Input.GetKey(KeyCode.Escape))
+			SceneManager.LoadScene("Menu");
 	}
 
 	void OnTriggerEnter(Collider other)
@@ -37,18 +47,37 @@ public class PlayerController : MonoBehaviour {
 		{
 			score += 1;
 			Destroy(other.gameObject);
-			Debug.Log("Score: " + score);
+			SetScoreText();
 		}
 
 		if (other.tag == "Trap")
 		{
 			health -= 1;
-			Debug.Log("Health: " + health);
+			SetHealthText();
 		}
 
 		if (other.tag == "Goal")
 		{
-			Debug.Log("You win!");
+			winLose.text = "You Win!";
+			winLose.color = Color.black;
+			winLose.transform.parent.GetComponent<Image>().color = Color.green;
+			winLose.transform.parent.gameObject.SetActive(true);
 		}
+	}
+
+	void SetScoreText()
+	{
+		scoreText.text = "Score: " + score;
+	}
+
+	void SetHealthText()
+	{
+		healthText.text = "Health: " + health;
+	}
+
+	IEnumerator LoadScene(float seconds)
+	{
+		yield return new WaitForSeconds(seconds);
+		SceneManager.LoadScene(SceneManager.GetActiveScene().name);
 	}
 }
